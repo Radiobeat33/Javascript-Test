@@ -1,31 +1,37 @@
 (function() {
 
+    "use strict";
+
     window.onload = function() {
 
         var checkingBalance = 0;
         var retirementBalance = 0;
 
-        // Method that takes in an array of class selectors and callback functions, this function runs once the page has loaded (see below)
+        // Method that takes in an array of class selectors and callback functions, this function runs
+        // once the page has loaded (see line 57) This modular setup gives you flexibility to add to the
+        // elementIdAndCallbackStorage for future use.
         var SetClickHandlers = {
             assign: function(arr) {
                 arr.forEach(function(value, index) {
-                    document.getElementById(arr[index][0]).addEventListener("click", function(){ arr[index][2](arr[index][1], arr[index][0]) });
+                    document.getElementById(arr[index][0]).addEventListener("click", function(){ arr[index][2](arr[index][1]) });
                     Account.updateDisplay(arr[index][1]);
                 });
             }
         };
 
+        // Account object with refactored deposit, withdraw, and update method. These methods handle
+        // both accounts while maintaining DRY standards.
         var Account = {
             deposit: function(amountElementId) {
                 var amount = parseInt(document.getElementById(amountElementId).value);
-                amountElementId === 'amount1' ? checkingBalance += amount : retirementBalance += amount + 10;
+                amountElementId === 'checkingAmount' ? checkingBalance += amount : retirementBalance += amount + 10;
                 Account.updateDisplay(amountElementId);
             },
             withdraw: function(amountElementId) {
                 var amount = parseInt(document.getElementById(amountElementId).value);
-                if (amountElementId === 'amount1' && amount <= checkingBalance) {
+                if (amountElementId === 'checkingAmount' && amount <= checkingBalance) {
                     checkingBalance -= amount;
-                } else if (amountElementId === 'amount2' && amount <= retirementBalance) {
+                } else if (amountElementId === 'retirementAmount' && amount <= retirementBalance) {
                     retirementBalance -= amount;
                 }
                 Account.updateDisplay(amountElementId);
@@ -33,10 +39,10 @@
             updateDisplay: function(amountElementId){
                 var currentBalance;
                 var currentBalanceElementId;
-                if(amountElementId === 'amount1'){
+                if(amountElementId === 'checkingAmount'){
                     currentBalance = checkingBalance;
                     currentBalanceElementId = 'checkingBalance';
-                } else {
+                } else if (amountElementId === 'retirementAmount'){
                     currentBalance = retirementBalance;
                     currentBalanceElementId = 'retirementBalance';
                 }
@@ -45,16 +51,19 @@
                 document.getElementById(amountElementId).value = '';
             }
         };
-        // Storage for all class selectors and their corresponding callback function
-        var classAndCallbackStorage = [
-            ["deposit1", "amount1", Account.deposit],
-            ["deposit2", "amount2", Account.deposit],
-            ["withdraw1", "amount1", Account.withdraw],
-            ["withdraw2", "amount2", Account.withdraw]
+
+        // Array storage for all class selectors and their corresponding callback function. This makes setting up
+        // a click handler much cleaner.
+        var elementIdAndCallbackStorage = [
+            ["checkingDeposit", "checkingAmount", Account.deposit],
+            ["retirementDeposit", "retirementAmount", Account.deposit],
+            ["checkingWithdraw", "checkingAmount", Account.withdraw],
+            ["retirementWithdraw", "retirementAmount", Account.withdraw]
         ];
 
-        // invoking the assign method within setClickHandlers with the classAndCallbackStorage array passed in as an argument
-        SetClickHandlers.assign(classAndCallbackStorage);
+        // invoking the assign method within setClickHandlers with the elementIdAndCallbackStorage array passed
+        // in as an argument. This happens once the page loads
+        SetClickHandlers.assign(elementIdAndCallbackStorage);
 
     }
 }());
